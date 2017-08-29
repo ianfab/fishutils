@@ -6,7 +6,19 @@ Run `python fishutils.py -h` to get info on required and optional arguments.
 
 The main functionality of the script is to automatically apply SPSA tuning results from [fishtest](https://github.com/glinscott/fishtest) or [multi-variant fishtest](https://github.com/ianfab/fishtest) to your Stockfish repository. To do this, copy the results of a SPSA tuning session to a file and run `python fishutils.py -s /path/to/stockfish/src/ -i /path/to/tuning_results.txt`, or copy the the tuning results to the clipboard and run `python fishutils.py -s /path/to/stockfish/src/` and then insert them.
 
-A line of the tuning results could, e.g., look like:
-`param: mLever[4], best: 27.00, start: 17.00, min: -100.00, max: 200.00, c 41.714131, a 223.069148`.
+An input line for the script (taken from fishtest tuning results) can, e.g., look like:
+`param: mLever[4], best: 27.00, start: 17.00, min: -100.00, max: 200.00, c 41.714131, a 223.069148`. The script then changes the value in the source code according to the given input line, in this example changing the middlegame value of `Lever[4]` from 17 to 27.
 
-If you want to see which changes would be applied without actually writing them to files, then you can use the `-d/--dry-run` option.
+### Features
+- Types `int`, `Value`, and `Score` are supported.
+- Enums are replaced by their values when used as an array index, e.g., `[PAWN]` -> `[1]`.
+- If a variable is defined by an enum, the tuning results are applied to the defining enum instead of the variable itself, e.g., `PieceValue[MG][1]` -> `PawnValueMg`.
+- The functions `round`, `floor`, and `ceil` are supported for rounding the best/new value.
+- The `-d/--dry-run` option can be used to view the changes wihout applying them to files.
+
+### Limitations
+The script does not parse C++ code, but only searches for regular expression patterns. Therefore, the script might fail to apply tuning results due to:
+- comments
+- preprocessor directives
+- namespaces
+- conflicting names/definitions
