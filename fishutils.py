@@ -26,7 +26,7 @@ from math import floor, ceil
 from difflib import unified_diff
 import parser
 
-MODES = ("spsa", "function")
+MODES = ("spsa", "function", "align")
 ROUNDING = {'round': round, 'ceil': ceil, 'floor': floor}
 LOGGING = {'DEBUG': logging.DEBUG, 'INFO': logging.INFO, 'WARNING': logging.WARNING, 'ERROR': logging.ERROR}
 
@@ -267,6 +267,46 @@ class Repository(object):
 
         f.write(fstr)
 
+    def align_array(self, match_input, _):
+        varname = match_input.group('name')
+        match_definition, f = self.search_def(varname)
+        if match_definition is None:
+            logging.error("%s: Definition not found." % varname)
+            return
+        current = match_definition.group(0)
+        previous = ""
+        while current != previous:
+            previous = current
+            current = self.align(current)
+        fstr =  match_definition.string[:match_definition.start()] \
+            + current \
+            + match_definition.string[match_definition.end():]
+
+        f.write(fstr)
+
+    @staticmethod
+    def align(s):
+        lines = s.splitlines()
+        format_patterns = []
+        for line in lines:
+            format_patterns.append(re.sub('[^{}\(\),]*', '', line))
+
+        for i in xrange(max(len(lines) - 1, 0)):
+            if (len(format_patterns[i]) > 0 and format_patterns[i].rstrip(',') == format_patterns[i+1].rstrip(',') \
+                and (format_patterns[i][0] != '{' or len(os.path.commonprefix([lines[i], lines[i+1]])) >= lines[i].find(format_patterns[i][0]))):
+                # Align adjacent lines
+                pos_old = -1
+                for j in format_patterns[i][:len(os.path.commonprefix([format_patterns[i], format_patterns[i+1]]))]:
+                    pos0 = lines[i  ].find(j, pos_old + 1)
+                    pos1 = lines[i+1].find(j, pos_old + 1)
+                    if pos0 < pos1:
+                        lines[i  ] = lines[i  ][:pos_old+1] + (pos1 - pos0) * ' ' + lines[i  ][pos_old+1:]
+                    elif pos0 > pos1:
+                        lines[i+1] = lines[i+1][:pos_old+1] + (pos0 - pos1) * ' ' + lines[i+1][pos_old+1:]
+                    pos_old = max(pos0, pos1)
+
+        return "\n".join(lines)
+
     def diff(self):
         assert self.in_memory
         s = ""
@@ -344,6 +384,13 @@ class FunctionParser(InputParser):
         self.help_text = "Give array and a formula f(x) separated by a semicolon.\nExample: 'razor_margin;2*x' doubles the razoring margins.\n" \
                          "Quit input by empty line.\nInput:"
 
+class AlignParser(InputParser):
+    def __init__(self, *args, **kwargs):
+        super(AlignParser, self).__init__(*args, **kwargs)
+        self.process_method = self.repo.align_array
+        self.regex_pattern = "^\s*(?P<name>\S+)\s*$"
+        self.help_text = "Give the names of the arrays that are to be aligned, with one name per line.\n" \
+                         "Quit input by empty line.\nInput:"
 
 def main(args):
     logging.basicConfig(format='[%(levelname)s] %(message)s', level=LOGGING[args.log_level])
@@ -359,8 +406,12 @@ def main(args):
 
     if args.mode == "spsa":
         parser_class = ResultParser
-    else:
+    elif args.mode == "function":
         parser_class = FunctionParser
+    elif args.mode == "align":
+        parser_class = AlignParser
+    else:
+        assert False, "This should never be reached. Check definition of modes."
 
     parser = parser_class(input_strings=input_strings, repo=repo)
     if not input_strings:
