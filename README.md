@@ -15,9 +15,10 @@ An input line for the script (taken from fishtest tuning results) can, e.g., loo
 - If a variable is defined by an enum, the tuning results are applied to the defining enum instead of the variable itself, e.g., `PieceValue[MG][1]` -> `PawnValueMg`.
 - The functions `round`, `floor`, and `ceil` are supported for rounding the best/new value.
 - The `-d/--dry-run` option can be used to view the changes wihout applying them to files.
+- Replacing values might lead to misaligned lines of array definitions. These can be realigned by running the script with the option `-m align` afterwards.
 
 ### Limitations
-The script does not parse C++ code, but only searches for regular expression patterns. Therefore, the script might fail to apply tuning results due to:
+The script does not parse C++ code, but only searches for regular expression patterns. Therefore, it might fail to apply tuning results due to:
 - comments
 - preprocessor directives
 - namespaces
