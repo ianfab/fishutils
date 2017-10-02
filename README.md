@@ -2,7 +2,7 @@
 Auto-apply parameter tweaks to [Stockfish](https://github.com/official-stockfish/Stockfish) or [multi-variant Stockfish](https://github.com/ddugovic/Stockfish).
 
 ## Usage
-Run `python fishutils.py -h` to get info on required and optional arguments.
+Run `python fishutils.py -h` to get info on required and optional arguments. See the [Wiki](https://github.com/ianfab/fishutils/wiki) for a simple example on how to use the script.
 
 The main functionality of the script is to automatically apply SPSA tuning results from [fishtest](https://github.com/glinscott/fishtest) or [multi-variant fishtest](https://github.com/ianfab/fishtest) to your Stockfish repository. To do this, copy the results of a SPSA tuning session to a file and run `python fishutils.py -s /path/to/stockfish/src/ -i /path/to/tuning_results.txt`, or copy the the tuning results to the clipboard and run `python fishutils.py -s /path/to/stockfish/src/` and then insert them.
 
