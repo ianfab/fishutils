@@ -46,7 +46,11 @@ def parse_args():
 
 def get_index(enum, entry):
     """Calculates enum value by counting commata."""
-    return enum[:enum.find(entry)].count(",")
+    m = re.search(entry + "\s*=\s*(?P<v>(-)?\d+)", enum)
+    if m is not None:
+        return int(m.group("v"))
+    else:
+        return enum[:enum.find(entry)].count(",")
 
 
 def is_source(f):
