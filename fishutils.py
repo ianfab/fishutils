@@ -225,7 +225,7 @@ class Repository(object):
             match_definition, f = self.search_def(enum_name, enum=True)
             if match_definition is not None:
                 logging.debug("Enum definition found in file %s: %s" % (f.path, match_value.group(0)))
-                match_value = re.search(enum_name+"\s*=\s*(?P<v>\d+)", match_definition.group(0), re.DOTALL | re.MULTILINE)
+                match_value = re.search(enum_name+"\s*=\s*(?P<v>(-)?\d+)", match_definition.group(0), re.DOTALL | re.MULTILINE)
                 assert match_value is not None
             else:
                 logging.error("Replacing %s failed. Definition '%s' can not be handled." % (fullname, enum_name))
