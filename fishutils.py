@@ -231,7 +231,7 @@ class Repository(object):
                 logging.error("Replacing %s failed. Definition '%s' can not be handled." % (fullname, enum_name))
                 return
 
-        if int(match_value.group(prefix)) != int(float(match_input.group("value_old"))):
+        if match_input.group("value_old") is not None and int(match_value.group(prefix)) != int(float(match_input.group("value_old"))):
             logging.warning("%s: Value in file differs from start value: %s !=  %s" %
                             (fullname, int(match_value.group(prefix)), int(float(match_input.group("value_old")))))
 
@@ -376,7 +376,8 @@ class ResultParser(InputParser):
     def __init__(self, *args, **kwargs):
         super(ResultParser, self).__init__(*args, **kwargs)
         self.process_method = self.repo.process_spsa_match
-        self.regex_pattern = "^\s*param: (?P<name>\w*)(?P<indices>[[\]\w\s]*), best: (?P<value_new>[\w.-]*), start: (?P<value_old>[\w.-]*)"
+        self.regex_pattern = "^\s*(param|Parameter): (?P<name>\w*)(?P<indices>[[\]\w\s]*), (best|theta): (?P<value_new>[\w.-]*)" \
+                             "(, start: (?P<value_old>[\w.-]*))?"
         self.help_text = "Give SPSA tuning results as reported by fishtest.\nQuit input by empty line.\nInput:"
 
 
@@ -388,6 +389,7 @@ class FunctionParser(InputParser):
         self.help_text = "Give array and a formula f(x) separated by a semicolon.\nExample: 'razor_margin;2*x' doubles the razoring margins.\n" \
                          "Quit input by empty line.\nInput:"
 
+
 class AlignParser(InputParser):
     def __init__(self, *args, **kwargs):
         super(AlignParser, self).__init__(*args, **kwargs)
@@ -395,6 +397,7 @@ class AlignParser(InputParser):
         self.regex_pattern = "^\s*(?P<name>\S+)\s*$"
         self.help_text = "Give the names of the arrays that are to be aligned, with one name per line.\n" \
                          "Quit input by empty line.\nInput:"
+
 
 def main(args):
     logging.basicConfig(format='[%(levelname)s] %(message)s', level=LOGGING[args.log_level])
