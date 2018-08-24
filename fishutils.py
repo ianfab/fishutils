@@ -67,8 +67,8 @@ def find_index(s, l):
     Returns a position in the input string.
     """
     pos = s.find("=")
-    pos = s.find("{", pos) + 1
-    i = 0
+    if l:
+        pos = s.find("{", pos) + 1
     for d in range(len(l)):
         for i in range(l[d]):
             pos_new = s.find(",", pos + 1)
